@@ -1,0 +1,9 @@
+set( Sources
+  ../../../external/miniz/miniz.c
+	src/main.cpp
+)
+ 
+set( Headers
+  ../../../external/miniz/miniz.h
+	../../../external/exr/tinyexr.h
+)

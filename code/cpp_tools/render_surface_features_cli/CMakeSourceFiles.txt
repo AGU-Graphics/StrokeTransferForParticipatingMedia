@@ -1,0 +1,7 @@
+set( Sources
+  src/main.cpp
+)
+ 
+set( Headers
+  src/camera.h
+)

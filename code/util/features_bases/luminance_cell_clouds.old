@@ -1,0 +1,337 @@
+import taichi as ti
+import taichi.math as tm
+import numpy as np
+import sys
+import time
+import xml.etree.ElementTree as ET
+from black_body import BlackBodyField
+from camera import Camera
+from light import Light
+from data_io import DataIO3D, Output3D
+from xml_load import xml_load
+from interpolation_taichi_field import InterpolationField
+from bounding_box import GetPositionFromDataIndex, IntersectBB
+
+class ComputeilluminanceSome():
+    def __init__(self, whole_density_path: str, density_paths: list[str], cam: Camera, blackbody_field: BlackBodyField):
+        input_h5 = DataIO3D.InitLoadFile(whole_density_path)
+        self.bb_min = input_h5.bb_min
+        self.bb_max = input_h5.bb_max_taichi()
+        self.cell_length = input_h5.cell_width
+        self.shape = input_h5.get_shape()
+        self.density = input_h5.data
+
+        # self.hdf5_path = whole_density_path
+        # h5 = h5py.File(whole_density_path, 'r')
+        # # load resolution
+        # self.resolution = h5['resolution'][()]
+        # resolution = self.resolution
+        # print('resolution', resolution)
+        # # load bb min max
+        # self.bb_min = tm.vec3(h5['bb_min'][()])
+        # self.bb_max = tm.vec3(h5['bb_max'][()])
+        # center = (self.bb_min + self.bb_max) / 2 + self.bb_min
+        # print(f'min {self.bb_min} center {center} max {self.bb_max}')
+        # self.cell_length = tm.vec3(h5['cell_size'][()])
+        # print('cell_length', self.cell_length)
+        # # load density
+        # density_np = np.array(h5['data']).reshape(resolution[2], resolution[1], resolution[0])
+        # # density_np = density_np.swapaxes(0, 2)
+        #
+        # if False:
+        #     plt.imshow(density_np[:, :, int(resolution[0] // 2)].transpose())
+        #     plt.gca().invert_yaxis()
+        #     plt.colorbar()
+        #     plt.show()
+        #
+        # # self.density = ti.field(dtype=ti.f32, shape=(resolution[0], resolution[1], resolution[2]))
+        # self.density = ti.field(dtype=ti.f32, shape=(resolution[2], resolution[1], resolution[0]))
+        # self.density.from_numpy(density_np)
+
+        # camera
+        self.camera = cam
+
+        self.transmittance_gaussian_filtered = None
+        self.transmittance_spline = None
+
+        # blackbody
+        self.blackbody_field = blackbody_field
+        self.blackbody_bb_min = blackbody_field.bb_min
+        self.blackbody_bb_max = blackbody_field.bb_max
+        self.blackbody_cell_length = blackbody_field.cell_width
+        self.blackbody_resolution = blackbody_field.shape
+
+        self.media_size = len(density_paths)
+
+        h5 = DataIO3D.InitLoadFile(density_paths[0])
+        self.media1_bb_min = h5.bb_min
+        self.media1_cell_length = h5.cell_width
+        self.media1_density = h5.data
+
+        h5 = DataIO3D.InitLoadFile(density_paths[1])
+        self.media2_bb_min = h5.bb_min
+        self.media2_cell_length = h5.cell_width
+        self.media2_density = h5.data
+
+        # for i in range(self.media_size):
+        #     media_path = media_paths[i]
+        #     media_h5 = h5py.File(media_path, 'r')
+        #     media_data = np.array(media_h5['data']).reshape(resolution[2], resolution[1], resolution[0])
+        #     media_density = ti.field(dtype=ti.f32, shape=(resolution[2], resolution[1], resolution[0]))
+        #     media_density.from_numpy(media_data)
+        #     setattr(self, f'media_density{i}', media_density)
+
+        # for i in range(self.media_size):
+        #     print(f'media_density{i}', getattr(self, f'media_density{i}'))
+
+    @ti.func
+    def henyey_greenstein_phase_function(self, cos_theta: float, g: float) -> ti.f32:
+        return (1.0 - g * g) / (4.0 * tm.pi * tm.pow(1.0 + g * g - 2.0 * g * cos_theta, 1.5))
+
+    @ti.func
+    def ComputeTransmittanceRay(self, origin, direction, step_distance, maxDistance, t0):
+        # intersected_t = self.IntersectBB(origin, dir) kernel内ではできなそう
+        # bb_min,bb_maxの値をそのまま使うとエラーになる。taichi側で直接使うと型の違いが発生する？
+        bb_min = self.bb_min
+        bb_max = self.bb_max
+        cell_length = self.cell_length
+        # 透過率の積分値を格納する変数
+        accumSigmaXStep = 0.0
+        # 積分の際に必要な回数を出す
+        max_step = int((maxDistance - t0) / step_distance) + 1
+        # tをstep_distanceずつ増やしていく
+        tmpT = t0
+        # 透過率の積分値を計算
+        for step in range(max_step):
+            if (tmpT + step_distance < maxDistance):
+                # maxDistanceまで到達していない場合
+                position = origin + direction * tmpT
+                sigma = InterpolationField(bb_min, bb_max, self.density, position, cell_length)
+                accumSigmaXStep += sigma * step_distance
+                tmpT += step_distance
+            else:
+                # maxDistanceを超えたら終了
+                position = origin + direction * tmpT
+                sigma = InterpolationField(bb_min, bb_max, self.density, position, cell_length)
+                accumSigmaXStep += sigma * step_distance
+                tmpT += maxDistance
+                break
+        return tm.exp(-accumSigmaXStep)
+
+    def ComputeIlluminance(self, lights: list[Light], albedo: list[tm.vec3], phaseFunc_g1: list[float], phaseFunc_g2: list[float], phaseFunc_blend: list[float], step_distance: float , super_samples: int):
+        self.Illuminance = ti.field(dtype=ti.f32, shape=(self.shape[0], self.shape[1], self.shape[2], 3))
+        # phaseFunc_g1 = phaseFunc_g1
+        # phaseFunc_g2 = phaseFunc_g2
+        # phaseFunc_blend = phaseFunc_blend
+        # albedo = albedo
+        cell_length = self.cell_length
+        spectral_r = 602.0 * 1.0e-9
+        spectral_g = 536.0 * 1.0e-9
+        spectral_b = 448.0 * 1.0e-9
+        spectral_rgb = tm.vec3([spectral_r, spectral_g, spectral_b])
+
+        # ステップ距離をセルの半分に設定
+        lights_nums = len(lights)
+
+        lights_position = ti.Vector.field(3, dtype=ti.f32, shape=lights_nums)
+        lights_color = ti.Vector.field(3, dtype=ti.f32, shape=lights_nums)
+        lights_distance_attenuation = ti.field(dtype=ti.i16, shape=lights_nums)
+
+        lights_position.from_numpy(np.array([light.position for light in lights]))
+        lights_color.from_numpy(np.array([light.color for light in lights]))
+        lights_distance_attenuation.from_numpy(np.array([int(light.distance_attenuation) for light in lights]))
+
+        # まずは透過率を求める
+        @ti.kernel
+        def ComputeIlluminanceMixKernel(step_distance: float, lights_num: int, light_position: ti.template(), light_color: ti.template()):
+            # すべてのセルに対して
+            bb_min = self.bb_min
+            bb_max = self.bb_max
+            cell_length = self.cell_length[0]
+            media1_bb_min = self.media1_bb_min
+            media2_bb_min = self.media2_bb_min
+
+            blackbody_bb_min = self.blackbody_bb_min
+            blackbody_bb_max = self.blackbody_bb_max
+            blackbody_cell_length = self.blackbody_cell_length
+
+            for I in ti.grouped(self.Illuminance):
+                result = tm.vec3([0.0, 0.0, 0.0])
+                # super_samples回数だけ繰り返すし、その平均を出す
+                for s in range(super_samples):
+                    position = GetPositionFromDataIndex( bb_min, cell_length*tm.vec3(1,1,1), tm.vec3(I[0], I[1], I[2]), s)
+                    # position = GetPositionFromDataIndex(tm.vec3([I[0], I[1], I[2]]) + offset_index)
+                    # position = self.GetPositionFromDataIndex(tm.vec3([I[0], I[1], I[2]]))
+                    for light_index in range(lights_num):
+
+                        # 光源からセルの座標までの方向ベクトルを計算
+                        direction = (position - light_position[light_index]).normalized()
+                        # 光源からセルの座標までの距離を計算
+                        distance = (position - light_position[light_index]).norm()
+                        intersected_t = IntersectBB(bb_min, bb_max, tm.vec3(light_position[light_index]), tm.vec3(direction))
+                        # t0には光源から見て最初にぶつかる位置が入る。t1には光源から見て最後にぶつかる位置が入る
+                        t0 = intersected_t[0]
+                        t1 = intersected_t[1]
+                        # 光源からセルの座標までの間にぶつかる部分から、セルの座標までの透過率を計算する
+                        transmittance = self.ComputeTransmittanceRay(light_position[light_index], direction, step_distance, distance, t0)
+                        # セルから始点にむけてのベクトルを計算する
+                        from_cell_to_eye = (self.camera.position - position).normalized()
+
+                        whole_albedo_g = tm.vec3([0.0, 0.0, 0.0])
+
+                        # media 1
+                        phase_function_dot = direction.dot(from_cell_to_eye)
+                        phase_function = self.henyey_greenstein_phase_function(phase_function_dot, phaseFunc_g1[0]) * (1.0 - phaseFunc_blend[0]) + self.henyey_greenstein_phase_function(phase_function_dot, phaseFunc_g2[0]) * phaseFunc_blend[0]
+                        tmp_bb_max = self.media1_bb_min + self.media1_cell_length * tm.vec3(self.media1_density.shape[2], self.media1_density.shape[1], self.media1_density.shape[0])
+                        tmp_bb_cell_size = tm.vec3(self.media1_cell_length[0], self.media1_cell_length[1], self.media1_cell_length[2])
+                        whole_albedo_g = whole_albedo_g + albedo[0] * phase_function * InterpolationField(media1_bb_min, tmp_bb_max, self.media1_density, position, tmp_bb_cell_size)
+
+                        # media 2
+                        phase_function = self.henyey_greenstein_phase_function(phase_function_dot, phaseFunc_g1[1]) * (1.0 - phaseFunc_blend[1]) + self.henyey_greenstein_phase_function(phase_function_dot, phaseFunc_g2[1]) * phaseFunc_blend[1]
+                        tmp_bb_max = self.media2_bb_min + self.media2_cell_length * tm.vec3(self.media2_density.shape[2], self.media2_density.shape[1], self.media2_density.shape[0])
+                        tmp_bb_cell_size = tm.vec3(self.media2_cell_length[0], self.media2_cell_length[1], self.media2_cell_length[2])
+                        whole_albedo_g = whole_albedo_g + albedo[1] * phase_function * InterpolationField(media2_bb_min, tmp_bb_max, self.media2_density, position, tmp_bb_cell_size)
+                        
+                        interpolated_density_whole = InterpolationField(bb_min, bb_max, self.density, position, tm.vec3(cell_length,cell_length,cell_length))
+                        for i in range(3):
+                            if(interpolated_density_whole > 0):
+                                whole_albedo_g[i] = whole_albedo_g[i] / interpolated_density_whole
+
+                        distance_attenuation = 1.0
+                        if lights_distance_attenuation[light_index] == 1:
+                            distance_attenuation = 1.0 / (distance * distance)
+                            # print(light_color[light_index] * distance_attenuation)
+                        result = result + transmittance * light_color[light_index] * whole_albedo_g * distance_attenuation
+                        # print(result)
+                # self.Illuminance[I[0], I[1], I[2], 0] = self.density[I[0], I[1], I[2]]
+                # self.Illuminance[I[0], I[1], I[2], 1] = 0.0
+                # self.Illuminance[I[0], I[1], I[2], 2] = 0.0
+                self.Illuminance[I[0], I[1], I[2], I[3]] = result[I[3]] / super_samples
+                # self.Illuminance[I[0], I[1], I[2], I[3]] = result[0]
+        ComputeIlluminanceMixKernel(step_distance, lights_nums, lights_position, lights_color)
+        print("camera", self.camera.position)
+
+    def GetArrayfromField(self, field):
+        return field.to_numpy()
+
+
+    def OutputIlluminance(self, output_hdf5_file_r: str, output_hdf5_file_g: str, output_hdf5_file_b: str):
+        rgb = self.Illuminance.to_numpy()
+        bb_min = np.array(self.bb_min)
+        bb_max = np.array(self.bb_max)
+        cell_size = np.array(self.cell_length)
+
+        Output3D(bb_min, cell_size, rgb[:, :, :, 0], output_hdf5_file_r)
+        Output3D(bb_min, cell_size, rgb[:, :, :, 1], output_hdf5_file_g)
+        Output3D(bb_min, cell_size, rgb[:, :, :, 2], output_hdf5_file_b)
+
+        # OutputHDF5(rgb[:, :, :, 0], bb_min, bb_max, cell_size, output_hdf5_file_r)
+        # OutputHDF5(rgb[:, :, :, 1], bb_min, bb_max, cell_size, output_hdf5_file_g)
+        # OutputHDF5(rgb[:, :, :, 2], bb_min, bb_max, cell_size, output_hdf5_file_b)
+
+def main():
+    print('main')
+    compute_mode = sys.argv[1]
+    if compute_mode == 'cpu':
+        ti.init(arch=ti.cpu)
+    elif compute_mode == 'gpu':
+        ti.init(arch=ti.gpu)
+
+    density_whole_file_path_argv = sys.argv[2]
+    media_size = len(sys.argv) - 7
+
+    media_paths = []
+    for i in range(media_size):
+        media_paths.append(sys.argv[3 + i])
+
+    xmlPath_argv = sys.argv[3 + media_size]
+    output_illuminance_file_path_R_argv = sys.argv[4 + media_size]
+    output_illuminance_file_path_G_argv = sys.argv[5 + media_size]
+    output_illuminance_file_path_B_argv = sys.argv[6 + media_size]
+    main_start = time.time()
+    density_file_path = density_whole_file_path_argv
+    xmlPath = xmlPath_argv
+    xml = xml_load(xmlPath)
+    output_illuminance_file_path_R = output_illuminance_file_path_R_argv
+    output_illuminance_file_path_G = output_illuminance_file_path_G_argv
+    output_illuminance_file_path_B = output_illuminance_file_path_B_argv
+
+    # phase_function_gの情報を取得
+    media1_phase_function_g1_xml = ET.parse(xmlPath).getroot().find('media1').attrib['phase_function_g1'].split(' ')
+    media1_phase_function_g2_xml = ET.parse(xmlPath).getroot().find('media1').attrib['phase_function_g2'].split(' ')
+    media1_phase_function_g_blend_xml = ET.parse(xmlPath).getroot().find('media1').attrib['phase_function_g_blend'].split(' ')
+    media2_phase_function_g1_xml = ET.parse(xmlPath).getroot().find('media2').attrib['phase_function_g1'].split(' ')
+    media2_phase_function_g2_xml = ET.parse(xmlPath).getroot().find('media2').attrib['phase_function_g2'].split(' ')
+    media2_phase_function_g_blend_xml = ET.parse(xmlPath).getroot().find('media2').attrib['phase_function_g_blend'].split(' ')
+    # temperatureの情報を取得
+    temp_min = xml.get_temp_min()
+    temp_max = xml.get_temp_max()
+    temp_factor = xml.get_temp_factor()
+    blackbody_factor = xml.get_blackbody_factor()
+    # blackbody_file_path = xml.get_temperature_file_path()
+    blackbody_file_path = ""
+
+    cell_super_samples = xml.get_cell_super_samples()
+    screen_super_samples = xml.get_screen_super_samples()
+    step_distance = xml.get_step_distance()
+
+    # 取得した情報を表示
+    print('media 1 phase_function_g1', media1_phase_function_g1_xml)
+    print('media 1 phase_function_g2', media1_phase_function_g2_xml)
+    print('media 1 phase_function_blend', media1_phase_function_g_blend_xml)
+    print('media 2 phase_function_g1', media2_phase_function_g1_xml)
+    print('media 2 phase_function_g2', media2_phase_function_g2_xml)
+    print('media 2 phase_function_blend', media2_phase_function_g_blend_xml)
+    xml_end = time.time()
+    print('xml_time:', xml_end - main_start)
+
+    cam = xml.get_camera()
+    light = xml.get_light()
+
+    # アルベドの設定
+    albedo1 = xml.get_albedo()
+    albedo2 = ET.parse(xmlPath).getroot().find('media2').attrib['albedo'].split(' ')
+    albedo2 = tm.vec3( float(albedo2[0]), float(albedo2[1]), float(albedo2[2]) )
+    print('alebdo1', albedo1, type(albedo1))
+    print('alebdo2', albedo2, type(albedo2))
+
+    # 位相関数の設定
+    media1_phase_function_g1 = float(media1_phase_function_g1_xml[0])
+    media1_phase_function_g2 = float(media1_phase_function_g2_xml[0])
+    media2_phase_function_g1 = float(media2_phase_function_g1_xml[0])
+    media2_phase_function_g2 = float(media2_phase_function_g2_xml[0])
+    media1_phase_function_blend = float(media1_phase_function_g_blend_xml[0])
+    media2_phase_function_blend = float(media2_phase_function_g_blend_xml[0])
+    # blackbodyの設定
+    blackbody = BlackBodyField(temp_min, temp_max, temp_factor, blackbody_factor, blackbody_file_path)
+
+    # メディアの読み込み, 設定
+    illuminance_some = ComputeilluminanceSome(whole_density_path=density_file_path, density_paths=media_paths , cam=cam, blackbody_field=blackbody)
+
+    init_end = time.time()
+    print('init_time:', init_end - main_start)
+    illuminance_some.ComputeIlluminance(light, [albedo1, albedo2], [media1_phase_function_g1, media2_phase_function_g1], [media1_phase_function_g2, media2_phase_function_g2], [media1_phase_function_blend, media2_phase_function_blend],step_distance=step_distance , super_samples=cell_super_samples)
+    compute_end = time.time()
+    print('compute_time:', compute_end - main_start)
+    # ここでilluminanceを配列に変換する
+
+    # RGB = 2
+    # # print('array_illuminance', array_illuminance[:, :, :, RGB])
+    # media.RenderIlluminance(32, array_illuminance[:, :, :, RGB], RGB)
+    """
+    # RGBのどの値を参照するか
+    RGB = 0
+    print('array_illuminance', array_illuminance[:, :, :, RGB])
+    # 内部輝度の描画
+    media.RenderIlluminance(32, array_illuminance[:, :, :, RGB], RGB)
+    """
+    # 内部輝度の出力
+    illuminance_some.OutputIlluminance(output_illuminance_file_path_R, output_illuminance_file_path_G, output_illuminance_file_path_B)
+    output_end = time.time()
+    print('output_time:', output_end - main_start)
+    main_end = time.time()
+    print('main_time:', main_end - main_start)
+    exit()
+
+if __name__ == '__main__':
+    main()

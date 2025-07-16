@@ -1,0 +1,23 @@
+set( Sources
+  ../../../../external/imgui/imgui_draw.cpp
+  ../../../../external/imgui/imgui_impl_glfw.cpp
+  ../../../../external/imgui/imgui_impl_opengl3.cpp
+  ../../../../external/imgui/imgui_tables.cpp
+  ../../../../external/imgui/imgui_widgets.cpp
+  ../../../../external/imgui/imgui.cpp
+  ../../../../external/imgui/ImGuiFileDialog.cpp
+)
+ 
+set( Headers
+  ../../../../external/imgui/imconfig.h
+  ../../../../external/imgui/imgui_impl_glfw.h
+  ../../../../external/imgui/imgui_impl_opengl3.h
+  ../../../../external/imgui/imgui_impl_opengl3_loader.h
+  ../../../../external/imgui/imgui_internal.h
+  ../../../../external/imgui/imgui.h
+  ../../../../external/imgui/imstb_rectpack.h
+  ../../../../external/imgui/imstb_textedit.h
+  ../../../../external/imgui/imstb_truetype.h
+  ../../../../external/imgui/ImGuiFileDialog.h
+  ../../../../external/imgui/ImGuiFileDialogConfig.h
+)

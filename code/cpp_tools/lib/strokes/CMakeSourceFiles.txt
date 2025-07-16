@@ -1,0 +1,14 @@
+set( Sources
+  activeset.cpp
+  anchor.cpp
+	stroke.cpp
+)
+ 
+set( Headers
+  activeset.h
+  anchor.h
+	framebufferobject.h
+	sampler.h
+	sortutil.h
+	stroke.h
+)

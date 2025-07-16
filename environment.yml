@@ -1,0 +1,21 @@
+name: stroke_transfer_pm
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.10
+  - numpy
+  - opencv
+  - matplotlib
+  - scipy
+  - tqdm
+  - h5py
+  - pyqt
+  - pyopengl
+  - psutil
+  - scikit-learn
+  - faiss-cpu
+  - noise
+  - pip
+  - pip:
+      - taichi

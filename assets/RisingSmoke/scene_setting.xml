@@ -1,0 +1,18 @@
+<setting>
+<camera position="" direction="" resolution="" film="36.0 36.0" fov2="0.3947911262512207 0.2651030719280243" />
+
+<!-- <light num="3" />
+<light1 position="-500.0 -500.0 -600.0" color="1.5 1.04 0.34" />
+<light2 position="300.078105926513672 300.0 -340.89596939086914" color="0.21 0.36 1.35" />
+<light3 position="-500.0 -500.0 -600.0" color="0.57 0.57 0.57" /> -->
+
+<lights>
+    <light position="-500.0 -500.0 -600.0" color="1.5 1.04 0.34" />
+    <light position="300.078105926513672 300.0 -340.89596939086914" color="0.21 0.36 1.35" />
+    <light position="-500.0 -500.0 -600.0" color="0.57 0.57 0.57" />
+</lights>
+
+<media1 sigma_k="0.3" phase_function_g1="0.0" phase_function_g2="0.0" phase_function_g_blend="0.0" offset_position="0 0 0" albedo="0.9 0.9 0.9" temperature_min="0" temperature_max="0" temperature_factor="0" blackbody_factor="0" />
+<compute gradient_norm_epsilon="1e-5" inf2val="100" grid_gaussian_filter_sigma="0.025" cell_super_samples="4" screen_super_samples="4" apparent_normal_norm_epsilon="1e-5" grid_gaussian_filter_sigmak="0.025" step_distance="0.021875" />
+
+</setting>

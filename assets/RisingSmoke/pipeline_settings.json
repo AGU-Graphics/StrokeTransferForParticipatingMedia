@@ -1,0 +1,254 @@
+{
+  "scene_name": "RisingSmoke",
+  "exemplar_file_templates": {
+    "exemplar": "assets/exemplar/exemplar_%03d.png",
+    "alpha": "assets/exemplar/alpha_%03d.png",
+    "annotation": "assets/exemplar/annotation_%03d.json",
+    "orientation": "temp/exemplar/orientation_%03d.h5",
+    "width": "temp/exemplar/width_%03d.h5",
+    "length": "temp/exemplar/length_%03d.h5",
+    "annotation_plot": "plot/annotation_plot/annotation_plot_%03d.png"
+  },
+  "raw_feature_file_templates": {
+    "intensity_r": "temp/raw_features/intensity_r/%03d.h5",
+    "intensity_g": "temp/raw_features/intensity_g/%03d.h5",
+    "intensity_b": "temp/raw_features/intensity_b/%03d.h5",
+    "intensity_l": "temp/raw_features/intensity_l/%03d.h5",
+    "intensity_l_gradient": "temp/raw_features/intensity_l_gradient/%03d.h5",
+    "gaussian_curvature": "temp/raw_features/gaussian_curvature/%03d.h5",
+    "mean_curvature": "temp/raw_features/mean_curvature/%03d.h5",
+    "apparent_normal_x": "temp/raw_features/apparent_normal_x/%03d.h5",
+    "apparent_normal_y": "temp/raw_features/apparent_normal_y/%03d.h5",
+    "apparent_normal_z": "temp/raw_features/apparent_normal_z/%03d.h5",
+    "apparent_relative_velocity_u": "temp/raw_features/apparent_relative_velocity_u/%03d.h5",
+    "apparent_relative_velocity_v": "temp/raw_features/apparent_relative_velocity_v/%03d.h5",
+    "apparent_relative_velocity_norm": "temp/raw_features/apparent_relative_velocity_norm/%03d.h5",
+    "transmittance": "temp/raw_features/transmittance/%03d.h5",
+    "mean_free_path": "temp/raw_features/mean_free_path/%03d.h5",
+    "silhouette_distance": "temp/raw_features/silhouette_distance/%03d.h5",
+    "temperature": null,
+    "bounding_box": "temp/raw_features/bounding_box/%03d.h5"
+  },
+  "feature_file_templates": {
+    "intensity_l": "temp/features/intensity_l/%03d.h5",
+    "intensity_astar": "temp/features/intensity_astar/%03d.h5",
+    "intensity_bstar": "temp/features/intensity_bstar/%03d.h5",
+    "intensity_l_gradient": "temp/features/intensity_l_gradient/%03d.h5",
+    "gaussian_curvature": "temp/features/gaussian_curvature/%03d.h5",
+    "mean_curvature": "temp/features/mean_curvature/%03d.h5",
+    "apparent_normal_x": "temp/features/apparent_normal_x/%03d.h5",
+    "apparent_normal_y": "temp/features/apparent_normal_y/%03d.h5",
+    "apparent_normal_z": "temp/features/apparent_normal_z/%03d.h5",
+    "apparent_relative_velocity_u": "temp/features/apparent_relative_velocity_u/%03d.h5",
+    "apparent_relative_velocity_v": "temp/features/apparent_relative_velocity_v/%03d.h5",
+    "apparent_relative_velocity_norm": "temp/features/apparent_relative_velocity_norm/%03d.h5",
+    "transmittance": "temp/features/transmittance/%03d.h5",
+    "mean_free_path": "temp/features/mean_free_path/%03d.h5",
+    "silhouette_distance": "temp/features/silhouette_distance/%03d.h5",
+    "temperature": null
+  },
+  "basis_file_templates": {
+    "intensity_gradient_para": "temp/basis/intensity_gradient_para/%03d.h5",
+    "intensity_gradient_perp": "temp/basis/intensity_gradient_perp/%03d.h5",
+    "silhouette_guided_para": "temp/basis/silhouette_guided_para/%03d.h5",
+    "silhouette_guided_perp": "temp/basis/silhouette_guided_perp/%03d.h5",
+    "apparent_normal_para": "temp/basis/apparent_normal_para/%03d.h5",
+    "apparent_normal_perp": "temp/basis/apparent_normal_perp/%03d.h5",
+    "apparent_relative_velocity_para": "temp/basis/apparent_relative_velocity_para/%03d.h5",
+    "apparent_relative_velocity_perp": "temp/basis/apparent_relative_velocity_perp/%03d.h5",
+    "mean_free_path_gradient_para": "temp/basis/mean_free_path_gradient_para/%03d.h5",
+    "mean_free_path_gradient_perp": "temp/basis/mean_free_path_gradient_perp/%03d.h5"
+  },
+  "basis_smooth_file_templates": {
+    "intensity_gradient_para": "temp/basis_smooth/intensity_gradient_para/%03d.h5",
+    "intensity_gradient_perp": "temp/basis_smooth/intensity_gradient_perp/%03d.h5",
+    "silhouette_guided_para": "temp/basis_smooth/silhouette_guided_para/%03d.h5",
+    "silhouette_guided_perp": "temp/basis_smooth/silhouette_guided_perp/%03d.h5",
+    "apparent_normal_para": "temp/basis_smooth/apparent_normal_para/%03d.h5",
+    "apparent_normal_perp": "temp/basis_smooth/apparent_normal_perp/%03d.h5",
+    "apparent_relative_velocity_para": "temp/basis_smooth/apparent_relative_velocity_para/%03d.h5",
+    "apparent_relative_velocity_perp": "temp/basis_smooth/apparent_relative_velocity_perp/%03d.h5",
+    "mean_free_path_gradient_para": "temp/basis_smooth/mean_free_path_gradient_para/%03d.h5",
+    "mean_free_path_gradient_perp": "temp/basis_smooth/mean_free_path_gradient_perp/%03d.h5"
+  },
+  "model_files": {
+    "orientation": "final/model/orientation_model.pickle",
+    "color": "final/model/color_model.pickle",
+    "width": "final/model/width_model.pickle",
+    "length": "final/model/length_model.pickle"
+  },
+  "attribute_file_templates": {
+    "orientation": "temp/attributes/orientation/%03d.h5",
+    "color": "temp/attributes/color/%03d.h5",
+    "width": "temp/attributes/width/%03d.h5",
+    "length": "temp/attributes/length/%03d.h5",
+    "smooth_orientation": "temp/attributes/smooth_orientation/%03d.h5",
+    "undercoat": "temp/attributes/color/%03d.png"
+  },
+  "plot_file_templates": {
+    "rendering": "plot/rendering/rendering_%03d.png",
+    "features": "plot/features/features_%03d.png",
+    "basis_smooth": "plot/basis_smooth/basis_smooth_%03d.png",
+    "regression_dir": "plot/regression",
+    "orientation": "plot/attributes/orientation/orientation_%03d.png",
+    "smooth_orientation": "plot/attributes/smooth_orientation/smooth_orientation_%03d.png",
+    "width": "plot/attributes/width/width_%03d.png",
+    "length": "plot/attributes/length/length_%03d.png"
+  },
+  "video_tone_mapping_rendering_file": "final/videos/Rising_smoke_rendering.mp4",
+  "video_attribute_files": {
+    "orientation": "final/videos/Rising_smoke_orientation.mp4",
+    "color": "final/videos/Rising_smoke_color.mp4",
+    "width": "final/videos/Rising_smoke_width.mp4",
+    "length": "final/videos/Rising_smoke_length.mp4",
+    "smooth_orientation": "final/videos/Rising_smoke_smooth_orientation.mp4"
+  },
+  "stroke_file_templates": {
+    "anchor": "final/stroke_data/anchor/%03d.h5",
+    "stroke_data": "final/stroke_data/stroke/%03d.h5",
+    "stroke": "final/stroke_images/stroke/%03d.png",
+    "final": "final/stroke_images/final/%03d.png",
+    "final_comp": "final/stroke_images/final_comp/%03d.png"
+  },
+  "video_stroke_files": {
+    "stroke": "final/videos/Rising_smoke_stroke.mp4",
+    "final": "final/videos/Rising_smoke_final.mp4",
+    "final_comp": "final/videos/Rising_smoke_final_comp.mp4"
+  },
+  "frame_settings": {
+    "start": 1,
+    "end": 240,
+    "skip": 1,
+    "fps": 24,
+    "learn_frames": [
+      114
+    ],
+    "learn_frames_extra": [
+      114,
+      210
+    ],
+    "interpolation_frames": [
+      210
+    ]
+  },
+  "resolution": [
+    512,
+    512
+  ],
+  "standardization_parameters": {
+    "T_infinity": 1.5,
+    "T_1": 0.6,
+    "q": 1.0
+  },
+  "exemplar_frame_estimation_parameters": {
+    "a": 0.02857142857142857,
+    "num_fit_GMM": 15,
+    "max_num_exemplars": 5,
+    "resolution": [
+      128,
+      128
+    ],
+    "start": 6,
+    "skip": 6,
+    "end": 240,
+    "parallel": false,
+    "out_log_file": "log/exemplar_frame_estimation.log",
+    "plot_dir": "plot/exemplar_frame_estimation"
+  },
+  "regression_parameters": {
+    "color_model_num_samples": 100000
+  },
+  "smoothing_parameters": {
+    "lambda_spatial": 1e-05,
+    "lambda_temporal": 0.01
+  },
+  "relocation_parameters": {
+    "use_relocate": true,
+    "relocator_setting_file": "temp/relocate/octave_relocator.json",
+    "r_scale_min": 0.0,
+    "r_scale_max": 0.04,
+    "r_sigma": 8.0,
+    "r_scale_space": 100,
+    "r_scale_time": 100000
+  },
+  "stroke_rendering_parameters": {
+    "angular_random_offset_deg": 5.0,
+    "random_offset_factor": 1.0,
+    "length_factor": 0.2,
+    "width_factor": 0.3,
+    "length_random_factor_relative": 0.0,
+    "width_random_factor_relative": 0.0,
+    "num_textures": 1,
+    "texture_length_mipmap_level": 1,
+    "stroke_step_length": 0.003,
+    "stroke_step_length_accuracy": 0.05,
+    "consecutive_failure_max": 200,
+    "rendering_width": 1024,
+    "rendering_height": 1024,
+    "sort_type": "add_sort_index",
+    "clip_with_undercoat_alpha": 0,
+    "texture_filename": "assets/textures/texture.png",
+    "texture_for_active_set_for_new_stroke_filename": "assets/textures/texture_for_new.png",
+    "texture_for_active_set_for_existing_stroke_filename": "assets/textures/texture_for_existing.png"
+  },
+  "render_strokes_parameters": {
+    "height_texture_filename": "assets/textures/height.png",
+    "combine_height_top_factor": 1.0,
+    "combine_height_additive_factor": 0.25,
+    "combine_height_additive_log_factor": 1.0,
+    "tex_step": 0.0040356030768911415,
+    "height_scale": 0.0007932152308166359,
+    "vz": 3.2,
+    "lx": 0.0,
+    "ly": 1.2,
+    "lz": 3.2,
+    "glossiness": 38.05462768008707,
+    "kd": 0.24,
+    "ks": 0.012,
+    "ka": 0.29,
+    "light_intensity": 2.8878583910449924,
+    "canvas_scale": 0.4
+  },
+  "for_plot": {
+    "transmittance_file_template": "temp/raw_features/transmittance/%03d.h5",
+    "intensity_l_file_template": "temp/features/intensity_l/%03d.h5"
+  },
+  "volume_data": {
+		"density": "density_%03d.h5",
+    "temperature": null,
+		"velocity_x": "vx_%03d.h5",
+		"velocity_y": "vy_%03d.h5",
+		"velocity_z": "vz_%03d.h5"
+	},
+	"directory_settings": {
+		"temp": "temp",
+		"final": "final"
+	},
+	"python_cmd": "python3",
+	"internal_file_templates": {
+      "extinction": "temp/internal/extinction/%03d.h5",
+      "integrated_extinction_cell": "temp/internal/integrated_extinction_cell/%03d.h5",
+      "transmittance_cell": "temp/internal/transmittance_cell/%03d.h5",
+      "fpd": "temp/internal/fpd/%03d.h5",
+      "screen_integrated_extinction": "temp/internal/screen_integrated_extinction/%03d.h5",
+      "screen_integrated_extinction_extra": "temp/internal/screen_integrated_extinction_extra/%03d.h5",
+      "transmittance_screen_extra": "temp/internal/transmittance_screen_extra/%03d.h5",
+      "luminance_cell_r" : "temp/internal/luminance_cell_r/%03d.h5",
+      "luminance_cell_g" : "temp/internal/luminance_cell_g/%03d.h5",
+      "luminance_cell_b" : "temp/internal/luminance_cell_b/%03d.h5",
+      "luminance_l_gradient" : "temp/internal/luminance_l_gradient/%03d.h5",
+      "luminance_r_fpd" : "temp/internal/luminance_cell_r_fpd/%03d.h5",
+      "luminance_g_fpd" : "temp/internal/luminance_cell_g_fpd/%03d.h5",
+      "luminance_b_fpd" : "temp/internal/luminance_cell_b_fpd/%03d.h5",
+      "rel_velocity_screen_space_u" : "temp/internal/rel_velocity_screen_space_u/%03d.h5",
+      "rel_velocity_screen_space_v" : "temp/internal/rel_velocity_screen_space_v/%03d.h5",
+      "rel_velocity_screen_space_u_fpd" : "temp/internal/rel_velocity_screen_space_u_fpd/%03d.h5",
+      "rel_velocity_screen_space_v_fpd" : "temp/internal/rel_velocity_screen_space_v_fpd/%03d.h5",
+      "world_scape_apparent_normal" : "temp/internal/world_scape_apparent_normal/%03d.h5",
+      "transmittance_cell_gaussian_filtered": "temp/internal/transmittance_cell_gaussian_filtered/%03d.h5",
+      "mean_free_path_cell" : "temp/internal/mean_free_path_cell/%03d.h5",
+      "mean_free_path_cell_fpd" : "temp/internal/mean_free_path_cell_fpd/%03d.h5",
+      "mean_free_path_gradient" : "temp/internal/mean_free_path_gradient/%03d.h5",
+      "silhouette_distance_gradient": "temp/internal/silhouette_distance_gradient/%03d.h5"
+	}
+}

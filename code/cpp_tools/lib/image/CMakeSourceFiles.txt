@@ -1,0 +1,10 @@
+set( Sources
+  image.cpp
+)
+ 
+set( Headers
+	image.h
+	imagegl.h
+	imageiopng.h
+	imageioutil.h
+)
