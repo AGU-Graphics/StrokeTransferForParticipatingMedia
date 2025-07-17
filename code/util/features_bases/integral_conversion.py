@@ -3,7 +3,7 @@
 # http://cg.it.aoyama.ac.jp/yonghao/sig25/abstsig25.html
 #
 # File: integral_conversion.py
-# Maintainer: Naoto Shirashima
+# Maintainer: Naoto Shirashima and Yuki Yamaoka
 #
 # Description:
 # A component that performs line-of-sight integration for any volume data.

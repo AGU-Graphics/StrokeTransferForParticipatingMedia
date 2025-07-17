@@ -3,7 +3,7 @@
 # http://cg.it.aoyama.ac.jp/yonghao/sig25/abstsig25.html
 #
 # File: black_body.py
-# Maintainer: Naoto Shirashima
+# Maintainer: Naoto Shirashima and Yuki Yamaoka
 #
 # Description:
 # Converting temperature field to brightness

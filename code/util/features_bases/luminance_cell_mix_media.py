@@ -3,7 +3,7 @@
 # http://cg.it.aoyama.ac.jp/yonghao/sig25/abstsig25.html
 #
 # File: luminance_cell_mix_media.py
-# Maintainer: Naoto Shirashima
+# Maintainer: Naoto Shirashima and Yuki Yamaoka
 #
 # Description:
 # Inner brightness calculation for CollidingSmokes

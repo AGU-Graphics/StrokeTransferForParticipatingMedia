@@ -3,7 +3,7 @@
 # http://cg.it.aoyama.ac.jp/yonghao/sig25/abstsig25.html
 #
 # File: depth_value.py
-# Maintainer: Naoto Shirashima
+# Maintainer: Naoto Shirashima and Yuki Yamaoka
 #
 # Description:
 # Depth Value Class

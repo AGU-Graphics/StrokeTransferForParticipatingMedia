@@ -3,7 +3,7 @@
 # http://cg.it.aoyama.ac.jp/yonghao/sig25/abstsig25.html
 #
 # File: apparent_normal.py
-# Maintainer: Naoto Shirashima
+# Maintainer: Naoto Shirashima and Yuki Yamaoka
 #
 # Description:
 # Transform the transmittance on the grid into a normal using Cubic-B-Spline
