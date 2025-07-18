@@ -3,7 +3,7 @@
 # http://cg.it.aoyama.ac.jp/yonghao/sig25/abstsig25.html
 #
 # File: transmittance_surface_screen.py
-# Maintainer: Naoto Shirashima and Yuki Yamaoka
+# Maintainer: Naoto Shirashima
 #
 # Description:
 # The transmittance of light through the surface seen by the screen
