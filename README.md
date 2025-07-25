@@ -49,6 +49,9 @@ cd StrokeTransferForParticipatingMedia
 ```bash
 # This will build the C++ tools and create the conda environment automatically
 python setup.py --env conda
+
+# After setup, activate the environment manually
+conda activate stroke_transfer_pm
 ```
 
 #### Option 2: Using pip + venv (or conda-based pip environment)

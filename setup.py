@@ -24,7 +24,6 @@ import argparse
 import subprocess
 import sys
 
-
 BUILD_DIR = "./code/cpp_tools/build"
 BIN_DIR = "./code/cpp_tools/bin"
 
@@ -81,7 +80,6 @@ def run_command(cmd, cwd=None):
 def setup_conda_env():
     print("[INFO] Setting up environment via conda...")
     run_command("conda env create -f environment.yml")
-    run_command("conda activate stroke_transfer_pm")
 
 
 def setup_pip_env():
